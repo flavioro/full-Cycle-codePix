@@ -26,23 +26,24 @@ type Transactions struct {
 type Transaction struct {
 	Base								`valid:"required"`
 	AccountFrom					*Account `valid:"-"`
-	Amount							float64		`json:"amount" valid:"notnull"`
+	AccountFromID				string 		`gorm:"column:account_from_id;type:uuid;" valid:"notnull"`
+	Amount							float64		`json:"amount" gorm:"type:float" valid:"notnull"`
 	PixKeyTo 						*PixKey		`valid:"-"`
 	PixKeyIdTo					string 		`gorm:"column:pix_key_id_to;type:uuid;" valid:"notnull"`
-	Status							string		`json:"status" valid:"notnull"`
-	Description					string		`json:"description" valid:"notnull"`
-	CancelDescription		string		`json:"cancel_description" valid:"-"`
+	Status							string		`json:"status" gorm:"type:varchar(20)" valid:"notnull"`
+	Description					string		`json:"description" gorm:"type:varchar(255)" valid:"-"`
+	CancelDescription		string		`json:"cancel_description" gorm:"type:varchar(255)" valid:"-"`
 }
 
 func (t *Transaction) isValid() error {
 	_, err := govalidator.ValidateStruct(t)
 
 	if t.Amount <= 0 {
-		return errors.New(text: "the amount must be greater than 0")
+		return errors.New("the amount must be greater than 0")
 	}
 
 	if t.Status != TransactionPending && t.Status != TransactionCompleted && t.Status != TransactionError {
-		return errors.New(text: "invalid status for the transaction")
+		return errors.New("invalid status for the transaction")
 	}
 
 	if t.PixKeyTo.AccountID == t.AccountFrom {
